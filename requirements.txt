@@ -1,0 +1,9 @@
+numpy>=1.26
+opencv-contrib-python>=4.9  # rtmlib la pide; no instalar también opencv-python
+python-osc>=1.8
+cv2-enumerate-cameras>=1.1
+# cuerpos (pose)
+rtmlib>=0.0.13
+onnxruntime>=1.18
+# LiDAR LD19 (opcional)
+pyserial>=3.5

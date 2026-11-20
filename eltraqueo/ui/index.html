@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>eltraqueo</title>
+<link rel="icon" href="data:,">
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+     Diseño, investigación y desarrollo: Héctor Cruz Juárez — https://hectorcruz.com.mx
+     Colección Alchemy of Meaning. -->
+<style>
+:root{
+  --a-bg:#0a0a0a; --a-panel:#101010; --a-bar:#1c1c1c; --a-line:#2e2e2e; --a-line-ctl:#3a3a3a; --a-hover:#1f1f1f;
+  --a-ink:#d2d2d2; --a-ink-strong:#fff; --a-ink-dim:#8f8f8f;
+  --a-accent:#76c411; --a-accent-ink:#a5e04a; --a-accent-bg:#1b2512;
+  --a-radius:3px; --a-radius-sm:2px; --a-gap:8px; --a-pad:10px; --a-bar-h:24px; --a-ctl-h:32px; --a-t:120ms;
+  --a-font:Inter,Arial,Helvetica,sans-serif; --a-size:12px; --a-size-sm:11px;
+}
+html[data-contrast="alto"]{--a-bar:#fff;--a-line:#fff;--a-line-ctl:#fff;--a-ink:#fff;--a-ink-dim:#cfcfcf}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--a-bg);color:var(--a-ink);font:var(--a-size)/1.35 var(--a-font);font-variant-numeric:tabular-nums}
+body{display:grid;grid-template-columns:300px 1fr 300px;grid-template-rows:1fr auto;gap:var(--a-gap);padding:var(--a-gap);
+  padding-left:max(var(--a-gap),env(safe-area-inset-left));padding-right:max(var(--a-gap),env(safe-area-inset-right));
+  padding-bottom:max(var(--a-gap),env(safe-area-inset-bottom))}
+.col{display:flex;flex-direction:column;gap:var(--a-gap);overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:var(--a-line-ctl) transparent}
+.win{background:var(--a-panel);border:1px solid var(--a-line);border-radius:var(--a-radius)}
+.win>h2{margin:0;height:var(--a-bar-h);display:flex;align-items:center;justify-content:space-between;padding:0 8px;background:var(--a-bar);
+  font-size:var(--a-size-sm);font-weight:500;color:var(--a-ink);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--a-line)}
+.win>h2 small{text-transform:none;letter-spacing:0;color:var(--a-ink-dim);font-weight:400}
+.body{padding:var(--a-pad);display:grid;gap:6px}
+.row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;min-height:26px}
+.row>label,.lbl{color:var(--a-ink-dim);font-size:var(--a-size-sm)}
+input,select,button{font:inherit;color:var(--a-ink-strong);background:var(--a-bg);border:1px solid var(--a-line-ctl);border-radius:var(--a-radius-sm);
+  height:26px;padding:0 6px;min-width:0;transition:border-color var(--a-t),background-color var(--a-t),color var(--a-t)}
+input[type=number]{width:100%}
+select{width:100%}
+button{cursor:pointer;background:var(--a-panel);padding:0 10px}
+button:hover{background:var(--a-hover)}
+button[aria-pressed=true],.live{background:var(--a-accent-bg);border-color:var(--a-accent);color:var(--a-accent-ink)}
+:focus-visible{outline:2px solid var(--a-accent);outline-offset:1px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.seg{display:flex}
+.seg button{border-radius:0;flex:1}
+.seg button:first-child{border-radius:var(--a-radius-sm) 0 0 var(--a-radius-sm)}
+.seg button:last-child{border-radius:0 var(--a-radius-sm) var(--a-radius-sm) 0}
+.seg button+button{border-left:none}
+.seg button[aria-pressed=true]{background:var(--a-hover);border-color:var(--a-line-ctl);color:var(--a-ink-strong)}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;border:none;height:20px;padding:0;width:100%}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(var(--a-accent),var(--a-accent)) 0/var(--p,50%) 100% no-repeat,var(--a-line-ctl)}
+input[type=range]::-moz-range-track{height:2px;background:var(--a-line-ctl)}
+input[type=range]::-moz-range-progress{height:2px;background:var(--a-accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:6px;height:14px;margin-top:-6px;background:var(--a-ink-strong);border-radius:1px}
+input[type=range]::-moz-range-thumb{width:6px;height:14px;background:var(--a-ink-strong);border:none;border-radius:1px}
+.rng{display:grid;grid-template-columns:1fr 44px;gap:6px;align-items:center}
+.rng output{color:var(--a-ink-strong);text-align:right;font-size:var(--a-size-sm)}
+.chk{display:flex;align-items:center;gap:6px;color:var(--a-ink);font-size:var(--a-size-sm);cursor:pointer}
+.chk input{width:14px;height:14px;accent-color:var(--a-accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.list{display:grid;gap:2px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;height:28px;padding:0 8px;border:1px solid var(--a-line);border-radius:var(--a-radius-sm);cursor:pointer}
+.item[aria-selected=true]{border-color:var(--a-accent);background:var(--a-accent-bg)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--a-line-ctl);flex:none}
+.dot.on{background:var(--a-accent)} .dot.err{background:#e05a4a}
+.meter{height:3px;background:var(--a-line);border-radius:2px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--a-accent);width:0}
+.msg{color:var(--a-ink-dim);font-size:var(--a-size-sm);min-height:15px}
+.err{color:#ff8a7a}
+/* escena */
+#stage{display:grid;grid-template-rows:1fr minmax(160px,34%);gap:var(--a-gap);min-height:0}
+.view{position:relative;background:#000;border:1px solid var(--a-line);border-radius:var(--a-radius);overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center}
+.view img,.view canvas.fill{max-width:100%;max-height:100%;display:block}
+#pv{position:relative;display:inline-block;max-width:100%;max-height:100%}
+#pv img{max-height:calc(100vh - 300px)}
+#pvc{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.corner{position:absolute;font-size:10px;color:var(--a-ink-dim);pointer-events:none;mix-blend-mode:difference}
+.corner.tl{top:6px;left:8px}.corner.tr{top:6px;right:8px}.corner.bl{bottom:6px;left:8px}.corner.br{bottom:6px;right:8px}
+.tag{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:var(--a-size-sm);color:var(--a-ink-dim)}
+#map{width:100%;height:100%}
+.empty{color:var(--a-ink-dim);padding:20px;text-align:center}
+/* dock */
+#dock{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:6px 8px;background:var(--a-panel);border:1px solid var(--a-line);border-radius:var(--a-radius)}
+#dock .rd{display:flex;gap:6px;align-items:baseline}
+#dock .rd b{color:var(--a-ink-strong);font-weight:500}
+#dock .sp{flex:1}
+#go{min-width:120px;height:var(--a-ctl-h)}
+#credit{color:var(--a-ink-dim);font-size:10px}
+#restore{position:fixed;right:8px;bottom:8px;display:none;width:22px;height:22px;padding:0}
+body.hide .col,body.hide #dock{visibility:hidden}
+body.hide #restore{display:block}
+.calib{display:none}
+.calib.on{display:grid}
+.pts{display:grid;grid-template-columns:20px 1fr 1fr;gap:4px;align-items:center}
+.pts input{width:100%}
+@media (max-width:900px){
+  body{grid-template-columns:1fr;grid-template-rows:auto auto auto auto;height:auto;min-height:100%}
+  #stage{grid-template-rows:auto 220px;order:-1}
+  #dock{position:sticky;bottom:0;z-index:2}
+  #pv img{max-height:50vh}
+  .col{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<div class="col" id="left">
+  <section class="win">
+    <h2>entradas <small id="inCount"></small></h2>
+    <div class="body">
+      <div class="list" id="inputs" role="listbox" aria-label="entradas"></div>
+      <div class="btns"><button id="addIn">+ entrada</button><button id="delIn">quitar</button></div>
+    </div>
+  </section>
+
+  <section class="win" id="inWin">
+    <h2>sensor <small id="inInfo"></small></h2>
+    <div class="body" id="sensorBody"></div>
+  </section>
+
+  <section class="win">
+    <h2>qué ver</h2>
+    <div class="body">
+      <div class="seg" id="detSeg" role="group" aria-label="detector"></div>
+      <div id="detBody" class="body" style="padding:0"></div>
+      <div class="btns" id="detActions"></div>
+      <div class="msg" id="detMsg"></div>
+    </div>
+  </section>
+
+  <section class="win">
+    <h2>piso <small id="calState"></small></h2>
+    <div class="body">
+      <div class="msg">Marca 4 puntos del piso en la imagen y escribe dónde están en metros. Sin calibrar, la imagen se estira a los límites.</div>
+      <div class="btns"><button id="calBtn" aria-pressed="false">calibrar piso</button><button id="calClear">borrar</button><button id="roiBtn" aria-pressed="false">zona útil</button></div>
+      <div class="calib" id="calForm">
+        <div class="pts" id="calPts"></div>
+        <div class="btns"><button id="calApply" class="live">aplicar</button><button id="calCancel">cancelar</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main id="stage">
+  <div class="view" id="viewCam">
+    <div id="pv"><img id="pvImg" alt="vista previa de la entrada"><canvas id="pvc"></canvas></div>
+    <div class="empty" id="pvEmpty" hidden>sin vista previa</div>
+    <span class="corner tl" id="cTL">0,0</span><span class="corner tr" id="cTR"></span>
+    <span class="corner bl" id="cBL"></span><span class="corner br">1,1</span>
+  </div>
+  <div class="view">
+    <canvas id="map" class="fill"></canvas>
+    <span class="tag">escenario visto desde arriba · público abajo</span>
+    <span class="corner bl" id="mBL"></span><span class="corner tr" id="mTR"></span>
+  </div>
+</main>
+
+<div class="col" id="right">
+  <section class="win">
+    <h2>salida osc <small id="oscHz"></small></h2>
+    <div class="body" id="oscBody"></div>
+  </section>
+  <section class="win">
+    <h2>seguimiento</h2>
+    <div class="body" id="trkBody"></div>
+  </section>
+  <section class="win">
+    <h2>espacio <small>metros</small></h2>
+    <div class="body" id="spcBody"></div>
+  </section>
+  <section class="win">
+    <h2>objetivos <small id="tCount">0</small></h2>
+    <div class="body"><div class="list" id="targets"></div></div>
+  </section>
+</div>
+
+<div id="dock">
+  <button id="go">iniciar</button>
+  <span class="rd"><span class="lbl">cámara</span><b id="dFps">–</b><span class="lbl">fps</span></span>
+  <span class="rd"><span class="lbl">detección</span><b id="dMs">–</b><span class="lbl">ms</span></span>
+  <span class="rd"><span class="lbl">osc</span><b id="dHz">–</b><span class="lbl">Hz</span></span>
+  <span class="rd"><span class="lbl">mensajes</span><b id="dSent">0</b></span>
+  <button id="resetIds">reiniciar IDs</button>
+  <span class="msg" id="saveMsg"></span>
+  <span class="sp"></span>
+  <span id="credit">eltraqueo <span id="ver"></span> · Alchemy of Meaning · Héctor Cruz Juárez</span>
+  <span class="lbl">h oculta</span>
+  <button id="quit" title="cerrar eltraqueo">salir</button>
+</div>
+<button id="restore" title="mostrar interfaz" aria-label="mostrar interfaz">▪</button>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+let cfg=null, cams=[], dets={}, sel=null, state=null;
+let calMode=false, calPts=[], roiMode=false, roiDrag=null;
+
+// ---------- API ----------
+const api={
+  get:p=>fetch(p,{cache:"no-store"}).then(r=>r.json()),
+  post:(p,b)=>fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json())
+};
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(async()=>{
+  try{await api.post("/api/config",cfg);$("#saveMsg").textContent="guardado";setTimeout(()=>$("#saveMsg").textContent="",1200)}
+  catch(e){$("#saveMsg").textContent="no se pudo guardar"}
+},250)}
+function act(name,input){return api.post("/api/action",{name,input}).then(r=>{if(r.message)$("#detMsg").textContent=r.message;return r})}
+
+// ---------- campos genéricos ----------
+function field(parent,label,obj,key,opt={}){
+  const row=document.createElement("div");row.className="row";
+  const l=document.createElement("label");l.textContent=label;row.appendChild(l);
+  let el;
+  if(opt.options){
+    el=document.createElement("select");
+    for(const [v,t] of opt.options){const o=document.createElement("option");o.value=v;o.textContent=t;el.appendChild(o)}
+    el.value=String(obj[key]);
+    el.onchange=()=>{obj[key]=opt.num?Number(el.value):el.value;save();opt.after&&opt.after()};
+  }else if(opt.range){
+    el=document.createElement("div");el.className="rng";
+    const r=document.createElement("input");r.type="range";r.min=opt.range[0];r.max=opt.range[1];r.step=opt.range[2];r.value=obj[key];
+    const o=document.createElement("output");
+    const upd=()=>{o.textContent=(+r.value).toFixed(opt.dec??0);r.style.setProperty("--p",((r.value-r.min)/(r.max-r.min)*100)+"%")};
+    r.oninput=()=>{obj[key]=Number(r.value);upd();save()};upd();
+    r.setAttribute("aria-label",label);
+    el.append(r,o);
+  }else if(opt.check){
+    el=document.createElement("label");el.className="chk";
+    const c=document.createElement("input");c.type="checkbox";c.checked=!!obj[key];
+    c.onchange=()=>{obj[key]=c.checked;save();opt.after&&opt.after()};el.append(c,document.createTextNode(opt.text||""));
+  }else{
+    el=document.createElement("input");el.type=opt.number?"number":"text";if(opt.step)el.step=opt.step;el.value=obj[key]??"";
+    el.onchange=()=>{obj[key]=opt.number?Number(el.value):el.value;save();opt.after&&opt.after()};
+  }
+  if(el.tagName!=="DIV"&&el.tagName!=="LABEL")el.setAttribute("aria-label",label);
+  row.appendChild(el);parent.appendChild(row);return el;
+}
+function checks(parent,obj,list){
+  const g=document.createElement("div");g.className="grid2";
+  for(const [k,t] of list){const l=document.createElement("label");l.className="chk";const c=document.createElement("input");c.type="checkbox";c.checked=!!obj[k];
+    c.onchange=()=>{obj[k]=c.checked;save()};l.append(c,document.createTextNode(t));g.appendChild(l)}
+  parent.appendChild(g);
+}
+
+// ---------- entradas ----------
+const curIn=()=>cfg.inputs.find(i=>i.id===sel);
+function renderInputs(){
+  const box=$("#inputs");box.innerHTML="";
+  for(const i of cfg.inputs){
+    const st=state?.inputs.find(s=>s.id===i.id);
+    const d=document.createElement("div");d.className="item";d.setAttribute("role","option");d.tabIndex=0;
+    d.setAttribute("aria-selected",i.id===sel);
+    const dot=`<span class="dot ${st?.error?"err":st?.running?"on":""}"></span>`;
+    d.innerHTML=`<span style="display:flex;gap:8px;align-items:center">${dot}<b style="font-weight:500;color:var(--a-ink-strong)">${i.id}</b><span class="lbl">${typeLabel(i)}</span></span><span class="lbl">${i.enabled?"":"apagada"}</span>`;
+    d.onclick=d.onkeydown=e=>{if(e.type==="keydown"&&e.key!=="Enter")return;sel=i.id;renderAll()};
+    box.appendChild(d);
+  }
+  $("#inCount").textContent=cfg.inputs.length;
+}
+function typeLabel(i){
+  const s=i.sensor;if(s.type==="camera"){const c=cams.find(c=>c.index===s.index);return c?c.name:"cámara "+s.index}
+  return {video:"video",synthetic:"prueba",lidar:"LiDAR"}[s.type]||s.type;
+}
+function renderSensor(){
+  const b=$("#sensorBody");b.innerHTML="";const i=curIn();if(!i){b.innerHTML='<div class="msg">sin entradas</div>';return}
+  const s=i.sensor;
+  field(b,"activa",i,"enabled",{check:true,text:"usar esta entrada",after:renderInputs});
+  field(b,"tipo",s,"type",{options:[["camera","cámara"],["video","archivo de video"],["synthetic","escena de prueba"],["lidar","LiDAR LD19 (experimental)"]],after:()=>{if(s.type==="lidar")i.detector.type="lidar";else if(i.detector.type==="lidar")i.detector.type="blobs";renderAll()}});
+  if(s.type==="camera"){
+    const opts=cams.length?cams.map(c=>[c.index,`${c.name} (${c.index})`]):[[s.index,"cámara "+s.index]];
+    field(b,"cámara",s,"index",{options:opts,num:true,after:()=>{const c=cams.find(c=>c.index===s.index);if(c)s.backend=c.backend;renderInputs();save()}});
+    field(b,"resolución",s,"width",{options:[[640,"640×480"],[1280,"1280×720"],[1920,"1920×1080"]],num:true,after:()=>{s.height={640:480,1280:720,1920:1080}[s.width];save()}});
+    field(b,"fps",s,"fps",{options:[[15,"15"],[30,"30"],[60,"60"]],num:true});
+  }else if(s.type==="video"){
+    field(b,"archivo",s,"path",{});
+  }else if(s.type==="synthetic"){
+    s.people??=3;field(b,"personas",s,"people",{range:[1,8,1]});
+  }else if(s.type==="lidar"){
+    field(b,"puerto",cfg.detectors.lidar,"port",{});
+  }
+  if(s.type!=="lidar"){
+    s.flip??="none";s.rotate??=0;
+    field(b,"espejo",s,"flip",{options:[["none","no"],["h","horizontal"],["v","vertical"],["hv","ambos"]]});
+    field(b,"rotar",s,"rotate",{options:[[0,"0°"],[90,"90°"],[180,"180°"],[270,"270°"]],num:true});
+  }
+}
+function renderDetector(){
+  const i=curIn();const seg=$("#detSeg");seg.innerHTML="";const body=$("#detBody");body.innerHTML="";$("#detActions").innerHTML="";
+  if(!i)return;
+  const isL=i.sensor.type==="lidar";
+  const list=isL?[["lidar","LiDAR"]]:[["blobs","manchas"],["pose","cuerpos"],["leds","LED IR"]];
+  for(const [k,t] of list){const bt=document.createElement("button");bt.textContent=t;bt.setAttribute("aria-pressed",i.detector.type===k);
+    bt.onclick=()=>{i.detector.type=k;save();renderDetector()};seg.appendChild(bt)}
+  const t=i.detector.type, d=cfg.detectors[t];
+  if(t==="blobs"){
+    field(body,"método",d,"method",{options:[["background","fondo capturado"],["mog2","fondo que aprende"],["bright","brillo"]],after:renderDetector});
+    field(body,"umbral",d,"threshold",{range:[1,255,1]});
+    field(body,"suavizar",d,"blur",{range:[1,21,2]});
+    field(body,"área mín.",d,"min_area",{range:[0.0002,0.05,0.0002],dec:4});
+    field(body,"área máx.",d,"max_area",{range:[0.01,0.8,0.01],dec:2});
+    field(body,"engrosar",d,"dilate",{range:[0,6,1]});
+    if(d.method==="background")field(body,"adaptar",d,"learn_rate",{range:[0,0.05,0.001],dec:3});
+    if(d.method==="background"){const b=document.createElement("button");b.textContent="capturar fondo (escenario vacío)";b.onclick=()=>act("capture_background",i.id);$("#detActions").appendChild(b)}
+  }else if(t==="pose"){
+    field(body,"modelo",d,"model",{options:[["rtmo","RTMO (mucha gente)"],["rtmpose","RTMPose (precisión)"]]});
+    field(body,"peso",d,"mode",{options:[["lightweight","ligero"],["balanced","equilibrado"],["performance","pesado"]]});
+    field(body,"procesador",d,"device",{options:[["cpu","CPU"],["cuda","GPU Nvidia (CUDA)"],["mps","Apple (CoreML)"]]});
+    field(body,"confianza",d,"min_score",{range:[0.05,0.9,0.05],dec:2});
+    field(body,"posición",d,"anchor",{options:[["hips","cadera"],["feet","pies (para piso)"],["center","centro del cuerpo"]]});
+    field(body,"máx. personas",d,"max_people",{range:[1,16,1]});
+  }else if(t==="leds"){
+    field(body,"umbral",d,"threshold",{range:[100,255,1]});
+    field(body,"parpadeo",d,"decode_blink",{check:true,text:"leer ID por parpadeo (experimental)"});
+  }else if(t==="lidar"){
+    field(body,"x (m)",d.position,0,{number:true,step:0.05});
+    field(body,"y (m)",d.position,1,{number:true,step:0.05});
+    field(body,"orientación",d,"heading_deg",{range:[0,360,1]});
+    field(body,"alcance",d,"max_range",{range:[1,12,0.5],dec:1});
+    field(body,"separación",d,"cluster_gap",{range:[0.05,0.6,0.01],dec:2});
+  }
+}
+function renderOsc(){
+  const b=$("#oscBody");b.innerHTML="";const o=cfg.osc;
+  field(b,"enviar",o,"enabled",{check:true,text:"OSC activo"});
+  o.destinations.forEach((d,k)=>{
+    const row=document.createElement("div");row.className="row";
+    row.innerHTML=`<label>destino ${k+1}</label>`;
+    const w=document.createElement("div");w.style.cssText="display:grid;grid-template-columns:1fr 64px 26px;gap:4px";
+    const h=document.createElement("input");h.value=d.host;h.setAttribute("aria-label","host");h.onchange=()=>{d.host=h.value.trim();save()};
+    const p=document.createElement("input");p.type="number";p.value=d.port;p.setAttribute("aria-label","puerto");p.onchange=()=>{d.port=Number(p.value);save()};
+    const x=document.createElement("button");x.textContent="×";x.title="quitar destino";x.style.padding="0";x.onclick=()=>{o.destinations.splice(k,1);save();renderOsc()};
+    w.append(h,p,x);row.appendChild(w);b.appendChild(row);
+  });
+  const add=document.createElement("button");add.textContent="+ destino";add.onclick=()=>{o.destinations.push({host:"127.0.0.1",port:9100});save();renderOsc()};
+  const bb=document.createElement("div");bb.className="btns";bb.appendChild(add);b.appendChild(bb);
+  field(b,"tasa (Hz)",o,"rate",{range:[10,120,5]});
+  field(b,"prefijo",o,"prefix",{});
+  field(b,"paquete",o,"bundle",{check:true,text:"un bundle por cuadro"});
+  checks(b,o.send,[["position","posición m"],["norm","norm 0–1"],["velocity","velocidad"],["valid","valid"],["quality","calidad"],["source","fuente"],["events","enter/exit"],["frame","frame"],["count","conteo"],["bbox","caja"],["area","área"],["joints","articulaciones"]]);
+}
+function renderTracker(){
+  const b=$("#trkBody");b.innerHTML="";const t=cfg.tracker;
+  field(b,"máx. objetivos",t,"max_targets",{range:[1,30,1]});
+  field(b,"radio (m)",t,"match_radius",{range:[0.1,3,0.05],dec:2});
+  field(b,"suavizado",t,"smoothing",{range:[0,0.95,0.05],dec:2});
+  field(b,"confirmar",t,"confirm_hits",{range:[1,15,1]});
+  field(b,"gracia (s)",t,"grace",{range:[0.2,10,0.1],dec:1});
+}
+function renderSpace(){
+  const b=$("#spcBody");b.innerHTML="";const L=cfg.space.limits;
+  const g=document.createElement("div");g.className="grid2";b.appendChild(g);
+  for(const [k,t] of [["xmin","x mín (izq.)"],["xmax","x máx (der.)"],["ymin","y mín (proscenio)"],["ymax","y máx (fondo)"]]){
+    const w=document.createElement("div");const l=document.createElement("div");l.className="lbl";l.textContent=t;
+    const i=document.createElement("input");i.type="number";i.step="0.1";i.value=L[k];i.setAttribute("aria-label",t);i.onchange=()=>{L[k]=Number(i.value);save()};
+    w.append(l,i);g.appendChild(w)}
+}
+function renderAll(){renderInputs();renderSensor();renderDetector();renderOsc();renderTracker();renderSpace();setPreview();renderCal()}
+
+$("#addIn").onclick=()=>{
+  let n=cfg.inputs.length+1;while(cfg.inputs.some(i=>i.id==="cam"+n))n++;
+  const used=new Set(cfg.inputs.map(i=>i.sensor.index));const free=cams.find(c=>!used.has(c.index));
+  cfg.inputs.push({id:"cam"+n,enabled:true,sensor:{type:"camera",index:free?free.index:0,backend:free?free.backend:0,width:1280,height:720,fps:30,flip:"none",rotate:0},
+    detector:{type:"blobs"},floor:{image:[],world:[]},roi:[0,0,1,1]});
+  sel="cam"+n;save();renderAll();
+};
+$("#delIn").onclick=()=>{const k=cfg.inputs.findIndex(i=>i.id===sel);if(k<0)return;cfg.inputs.splice(k,1);sel=cfg.inputs[0]?.id||null;save();renderAll()};
+
+// ---------- vista previa y calibración ----------
+let pvFor=null;
+function setPreview(){
+  const img=$("#pvImg");
+  if(!sel){img.removeAttribute("src");pvFor=null;return}
+  if(pvFor!==sel){pvFor=sel;img.src="/preview/"+encodeURIComponent(sel)+".mjpg?"+Date.now()}
+}
+$("#pvImg").onerror=()=>setTimeout(()=>{pvFor=null;setPreview()},1500);
+$("#pvImg").onload=sizeOverlay;
+function sizeOverlay(){const c=$("#pvc"),im=$("#pvImg");c.width=im.clientWidth;c.height=im.clientHeight;drawOverlay()}
+new ResizeObserver(sizeOverlay).observe($("#pvImg"));
+function drawOverlay(){
+  const c=$("#pvc"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);
+  x.lineWidth=1;x.font="11px Inter,Arial";
+  if(calMode){x.strokeStyle=x.fillStyle="#a5e04a";calPts.forEach((p,k)=>{const X=p[0]*c.width,Y=p[1]*c.height;x.beginPath();x.arc(X,Y,5,0,7);x.stroke();x.fillText(k+1,X+7,Y-7)})}
+  if(roiMode&&roiDrag){x.strokeStyle="#a5e04a";const [a,b]=roiDrag;x.strokeRect(a[0]*c.width,a[1]*c.height,(b[0]-a[0])*c.width,(b[1]-a[1])*c.height)}
+}
+function uv(e){const r=$("#pvc").getBoundingClientRect();return [Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))]}
+$("#pvc").addEventListener("pointerdown",e=>{
+  if(calMode&&calPts.length<4){calPts.push(uv(e));drawOverlay();renderCal()}
+  else if(roiMode){roiDrag=[uv(e),uv(e)];$("#pvc").setPointerCapture(e.pointerId)}
+});
+$("#pvc").addEventListener("pointermove",e=>{if(roiMode&&roiDrag){roiDrag[1]=uv(e);drawOverlay()}});
+$("#pvc").addEventListener("pointerup",()=>{
+  if(roiMode&&roiDrag){const [a,b]=roiDrag;const r=[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])];
+    const i=curIn();if(i&&r[2]-r[0]>0.02&&r[3]-r[1]>0.02){i.roi=r.map(v=>+v.toFixed(4))}else if(i){i.roi=[0,0,1,1]}
+    roiDrag=null;roiMode=false;$("#roiBtn").setAttribute("aria-pressed","false");save();drawOverlay()}
+});
+function defaultWorld(){const L=cfg.space.limits;return [[L.xmin,L.ymax],[L.xmax,L.ymax],[L.xmax,L.ymin],[L.xmin,L.ymin]]}
+let calWorld=null;
+function renderCal(){
+  const i=curIn();const st=state?.inputs.find(s=>s.id===sel);
+  $("#calState").textContent=i&&i.floor?.image?.length>=4?"calibrado":"sin calibrar";
+  $("#calForm").classList.toggle("on",calMode);
+  if(!calMode)return;
+  calWorld??=(i.floor?.world?.length===4?i.floor.world.map(p=>p.slice()):defaultWorld());
+  const box=$("#calPts");box.innerHTML='<span></span><span class="lbl">x (m)</span><span class="lbl">y (m)</span>';
+  const names=["fondo izq.","fondo der.","proscenio der.","proscenio izq."];
+  for(let k=0;k<4;k++){
+    const n=document.createElement("span");n.className="lbl";n.textContent=k+1;n.title=names[k];
+    const ix=document.createElement("input");ix.type="number";ix.step="0.1";ix.value=calWorld[k][0];ix.onchange=()=>calWorld[k][0]=Number(ix.value);ix.setAttribute("aria-label",`punto ${k+1} x`);
+    const iy=document.createElement("input");iy.type="number";iy.step="0.1";iy.value=calWorld[k][1];iy.onchange=()=>calWorld[k][1]=Number(iy.value);iy.setAttribute("aria-label",`punto ${k+1} y`);
+    if(k>=calPts.length){ix.disabled=iy.disabled=true}
+    box.append(n,ix,iy);
+  }
+  const m=document.createElement("div");m.className="msg";m.style.gridColumn="1/-1";
+  m.textContent=calPts.length<4?`toca el punto ${calPts.length+1}: ${names[calPts.length]} (sugerido)`:"listo: revisa las medidas y aplica";
+  box.appendChild(m);
+}
+$("#calBtn").onclick=()=>{calMode=!calMode;calPts=[];calWorld=null;roiMode=false;$("#calBtn").setAttribute("aria-pressed",calMode);renderCal();drawOverlay()};
+$("#calCancel").onclick=()=>{calMode=false;calPts=[];$("#calBtn").setAttribute("aria-pressed","false");renderCal();drawOverlay()};
+$("#calApply").onclick=()=>{const i=curIn();if(!i||calPts.length<4)return;
+  i.floor={image:calPts.map(p=>p.map(v=>+v.toFixed(5))),world:calWorld.map(p=>p.map(Number))};
+  calMode=false;calPts=[];$("#calBtn").setAttribute("aria-pressed","false");save();renderCal();drawOverlay()};
+$("#calClear").onclick=()=>{const i=curIn();if(!i)return;i.floor={image:[],world:[]};save();renderCal()};
+$("#roiBtn").onclick=()=>{roiMode=!roiMode;calMode=false;$("#roiBtn").setAttribute("aria-pressed",roiMode);$("#calBtn").setAttribute("aria-pressed","false");renderCal()};
+
+// ---------- mapa ----------
+function drawMap(){
+  const c=$("#map"),r=c.parentElement.getBoundingClientRect();const dpr=devicePixelRatio||1;
+  c.width=r.width*dpr;c.height=r.height*dpr;c.style.width=r.width+"px";c.style.height=r.height+"px";
+  const x=c.getContext("2d");x.scale(dpr,dpr);
+  const L=cfg.space.limits,W=L.xmax-L.xmin,H=L.ymax-L.ymin,pad=22;
+  const s=Math.min((r.width-2*pad)/W,(r.height-2*pad)/H);
+  const ox=(r.width-W*s)/2,oy=(r.height-H*s)/2;
+  const P=(X,Y)=>[ox+(X-L.xmin)*s,oy+(L.ymax-Y)*s];
+  x.strokeStyle="#2e2e2e";x.lineWidth=1;
+  for(let gx=Math.ceil(L.xmin);gx<=L.xmax;gx++){const [a,b]=P(gx,L.ymin),[c2,d]=P(gx,L.ymax);x.beginPath();x.moveTo(a+.5,b);x.lineTo(c2+.5,d);x.stroke()}
+  for(let gy=Math.ceil(L.ymin);gy<=L.ymax;gy++){const [a,b]=P(L.xmin,gy),[c2,d]=P(L.xmax,gy);x.beginPath();x.moveTo(a,b+.5);x.lineTo(c2,d+.5);x.stroke()}
+  x.strokeStyle="#8f8f8f";x.strokeRect(ox+.5,oy+.5,W*s,H*s);
+  // origen
+  if(0>=L.xmin&&0<=L.xmax&&0>=L.ymin&&0<=L.ymax){const [a,b]=P(0,0);x.strokeStyle="#d2d2d2";x.beginPath();x.moveTo(a-6,b);x.lineTo(a+6,b);x.moveTo(a,b-6);x.lineTo(a,b+6);x.stroke()}
+  // LiDAR
+  for(const i of cfg.inputs)if(i.sensor.type==="lidar"){const p=cfg.detectors.lidar.position;const [a,b]=P(p[0],p[1]);x.strokeStyle="#d2d2d2";x.strokeRect(a-4,b-4,8,8)}
+  x.font="11px Inter,Arial";x.textBaseline="middle";
+  for(const t of state?.targets||[]){
+    const [a,b]=P(t.x,t.y);
+    x.strokeStyle="#76c411";x.beginPath();x.moveTo(a,b);x.lineTo(a+t.vx*s*0.5,b-t.vy*s*0.5);x.stroke();
+    x.fillStyle=t.valid?"#76c411":"#8f8f8f";x.beginPath();x.arc(a,b,6,0,7);x.fill();
+    x.fillStyle="#fff";x.fillText(t.id,a+10,b);
+  }
+  $("#mBL").textContent=`${L.xmin}, ${L.ymin} m`;$("#mTR").textContent=`${L.xmax}, ${L.ymax} m`;
+}
+
+// ---------- estado ----------
+function renderState(){
+  const s=state;if(!s)return;
+  const go=$("#go");go.textContent=s.running?"en vivo · detener":"iniciar";go.classList.toggle("live",s.running);go.setAttribute("aria-pressed",s.running);
+  const st=s.inputs.find(i=>i.id===sel);
+  $("#dFps").textContent=st?st.fps:"–";$("#dMs").textContent=st?st.det_ms:"–";
+  $("#dHz").textContent=s.osc.hz;$("#dSent").textContent=s.osc.sent.toLocaleString("es-MX");
+  $("#oscHz").textContent=s.osc.error?"error":"";
+  $("#inInfo").textContent=st?.info||"";
+  const dm=$("#detMsg");dm.textContent=st?.error||st?.status||"";dm.classList.toggle("err",!!st?.error);
+  $("#tCount").textContent=s.targets.length;
+  const tb=$("#targets");tb.innerHTML="";
+  for(const t of s.targets){
+    const d=document.createElement("div");d.className="item";d.style.cursor="default";
+    d.innerHTML=`<span style="display:flex;gap:8px;align-items:center"><span class="dot ${t.valid?"on":""}"></span><b style="color:#fff;font-weight:500">${t.id}</b><span class="lbl">${t.what||""}</span></span>
+    <span>${t.x.toFixed(2)}, ${t.y.toFixed(2)} <span class="lbl">m</span></span>
+    <span style="width:40px" class="meter" title="calidad ${t.q}"><i style="width:${Math.round(t.q*100)}%"></i></span>`;
+    tb.appendChild(d)}
+  $("#ver").textContent=s.version||"";
+  const prevDots=JSON.stringify(s.inputs.map(i=>[i.id,i.running,!!i.error]));
+  if(prevDots!==renderState._d){renderState._d=prevDots;renderInputs()}
+}
+async function poll(){
+  try{state=await api.get("/api/state");renderState();drawMap()}catch(e){$("#dHz").textContent="sin conexión"}
+  setTimeout(poll,100);
+}
+$("#go").onclick=()=>act(state?.running?"stop":"start").then(()=>{pvFor=null;setTimeout(setPreview,400)});
+$("#resetIds").onclick=()=>act("reset_ids");
+$("#quit").onclick=()=>{if(confirm("¿Cerrar eltraqueo? Se detiene el envío OSC."))act("quit").then(()=>document.body.innerHTML='<div class="empty" style="grid-column:1/-1">eltraqueo cerrado. Puedes cerrar esta pestaña.</div>')};
+
+// ---------- teclado ----------
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,select,textarea"))return;
+  if(e.key==="h"){document.body.classList.toggle("hide")}
+  if(e.key===" "){e.preventDefault();$("#go").click()}
+});
+$("#restore").onclick=()=>document.body.classList.remove("hide");
+addEventListener("resize",drawMap);
+
+// ---------- inicio ----------
+(async()=>{
+  cfg=await api.get("/api/config");
+  try{const r=await api.get("/api/cameras");cams=r.cameras||[];dets=r.detectors||{}}catch(e){}
+  sel=cfg.inputs[0]?.id||null;
+  renderAll();poll();
+})();
+</script>
+</body>
+</html>
